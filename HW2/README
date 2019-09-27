@@ -1,0 +1,14 @@
+Homework 2: Lorenz Attractor
+
+CSCI 5229: Gabriella Johnson
+
+Instructions to use program:
++/- Increase/decrease size of Lorenz Attractor plotted
+s, b, r Increase the s, b, r parameters
+d, n, t Decrease the s, b, r parameters
+v 	Reset to default s, b, r parameters
+arrows	Change view angle
+0	Reset view angle
+ESC, q	Exit
+
+Time it took to complete assignment: 2.5 hours
