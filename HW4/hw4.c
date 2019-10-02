@@ -2,13 +2,15 @@
  *  Projections
  *
  *  Create a scene to be viewed in both orthogonal and perspective projections from multiple eye positions directed by user input.
- *  starts at 48:30 in lecture
+ * 
  *  Key bindings:
+ *  a/d      Look left/right/up in the scene
+ *  w/s        Move forwards/backward into/from the scene
  *  m          Toggle between view modes: perspective, orthogonal, and first person perspective
  *  +/-        Changes field of view for perspective
- *  a          Toggle axes
+ *  x          Toggle axes
  *  arrows     Change view angle
- *  [  ]  Zoom in and out
+ *  [  ]       Zoom in and out: decrease/increase dim
  *  0          Reset view angle
  *  ESC        Exit
  */
@@ -28,9 +30,15 @@ int th=0;         //  Azimuth of view angle
 int ph=0;         //  Elevation of view angle
 int axes=0;       //  Display axes
 int mode=0;       //  Projection mode
-int fov=30;       //  Field of view (for perspective)
+int fov=58;       //  Field of view (for perspective)
 double asp=1;     //  Aspect ratio
-double dim=5.0;   //  Size of world
+double dim=2.6;   //  Size of world
+double MX = 0;
+double MY = 0;
+double MZ = 0;
+double EX = 0;
+double EY = 0;
+double EZ = 5.2;
 
 //  Macro for sin & cos in degrees
 #define Cos(th) cos(3.1415926/180*(th))
@@ -65,14 +73,11 @@ static void Project()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective transformation
-   if (mode == 0)
-      gluPerspective(fov,asp,dim/4,4*dim); // need to change the 4 to fit my scene; 
+   if (mode)
+      gluPerspective(fov,asp,dim/8,8*dim);
    //  Orthogonal projection
-   else if (mode == 1)
+   else
       glOrtho(-asp*dim,+asp*dim, -dim,+dim, -dim,+dim);
-   // First person perspective
-   else if (mode == 2)
-      gluPerspective(fov,asp,dim/4,4*dim); // change the dim number to make it first person perspective
    //  Switch to manipulating the model matrix
    glMatrixMode(GL_MODELVIEW);
    //  Undo previous transformations
@@ -256,6 +261,7 @@ void cylinder(double doubleX, double doubleY, double doubleZ, double radius, dou
     glEnd();
     glPopMatrix();
 }
+
 /**
  * Draws a torus cut in half along the y axis; adapted code from https://www.opengl.org/archives/resources/code/samples/redbook/torus.c
  * */
@@ -296,24 +302,30 @@ void display()
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    //  Enable Z-buffering in OpenGL
    glEnable(GL_DEPTH_TEST);
+   // Enable face culling in OpenGL
+   glEnable(GL_CULL_FACE);
    //  Undo previous transformations
    glLoadIdentity();
 
    //  Perspective - set eye position
-   if (mode == 0){
+   if (mode == 1){
       double Ex = -2*dim*Sin(th)*Cos(ph);
       double Ey = +2*dim        *Sin(ph);
       double Ez = +2*dim*Cos(th)*Cos(ph);
-      gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+      gluLookAt(Ex,Ey,Ez , 0,0,0 ,0,Cos(ph),0);
    }
    //  Orthogonal - set world orientation
-   else if (mode == 1) {
+   else if (mode == 0) {
       glRotatef(ph,1,0,0);
       glRotatef(th,0,1,0);
    }
    // First Person Perspective
    else if (mode == 2) {
-      printf("First person coming soon\n");
+      MX = -2*dim*Sin(th)*Cos(ph);
+      MY = -2*dim        *Sin(ph);
+      MZ = -2*dim*Cos(th)*Cos(ph);
+
+      gluLookAt(EX, EY, EZ, EX + MX, EY + MY, EZ + MZ, 0,1,0);
    }
  
    //  Chicago Skyline
@@ -390,7 +402,12 @@ void display()
    }
    //  Display parameters
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f FOV=%d Projection=%s",th,ph,dim,fov,mode?"Perpective":"Orthogonal");
+   if(mode == 0)
+      Print("Angle=%d,%d  Dim=%.1f FOV=%d Projection=%s",th,ph,dim,fov,"Orthogonal");
+   if(mode == 1)
+      Print("Angle=%d,%d  Dim=%.1f FOV=%d Projection=%s",th,ph,dim,fov,"Perspective");
+   if(mode == 2)
+      Print("Angle=%d,%d  Dim=%.1f FOV=%d Projection=%s",th,ph,dim,fov,"First Person");
 
    //  Render the scene
    glFlush();
@@ -433,25 +450,54 @@ void key(unsigned char ch,int x,int y)
    if (ch == 27)
       exit(0);
    //  Reset view angle
-   else if (ch == '0')
+   else if (ch == '0') {
       th = ph = 0;
+      dim = 2.6;
+      MX = 0;
+      MY = 0;
+      MZ = 0;
+      EX = 0;
+      EY = 0;
+      EZ = 2*dim;
+   }
    //  Toggle axes
-   else if (ch == 'a' || ch == 'A')
+   else if (ch == 'x' || ch == 'X')
       axes = 1-axes;
    //  Switch display mode
    else if (ch == 'm' || ch == 'M')
-      mode = 1-mode;
+      mode = (mode+1)%3;
    //  Change field of view angle
    else if (ch == '-' && ch>1)
       fov--;
    else if (ch == '+' && ch<179)
       fov++;
-   //  PageUp key - increase dim
+   //  Right Bracket - increase dim
    else if (ch == ']')
       dim += 0.1;
-   //  PageDown key - decrease dim
+   //  Left Bracket - decrease dim
    else if (ch == '[')
       dim -= 0.1;
+   // Go forwards into the scene
+   else if (ch == 'w' || ch == 'W') {
+		EX += MX * .1;
+      EZ += MZ * .1;
+   }
+   // Go backwards from the scene
+   else if (ch == 's' || ch == 'S') {
+		EX -= MX * .1;
+      EZ -= MZ * .1;
+   }
+   // Look right
+   else if (ch == 'd' || ch == 'D') {
+		th = -90;
+      ph = 0;
+   }
+   // Look left
+   else if (ch == 'a' || ch == 'A') {
+		th = 90;
+      ph = 0;
+   }
+
    //  Reproject
    Project();
    //  Tell GLUT it is necessary to redisplay the scene

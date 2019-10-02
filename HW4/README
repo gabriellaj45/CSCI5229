@@ -2,12 +2,16 @@ Homework 4: Projections
 
 CSCI 5229: Gabriella Johnson
 
-This scene is the skyline of Chicago with some buildings in front and behind the main line of buildings. Use the arrow keys to explore the scene.
 
 Instructions to use program:
-a          Toggle axes
+a/d      Look left/right in the scene
+w/s        Move forwards/backward into/from the scene
+m          Toggle between view modes: perspective, orthogonal, and first person perspective
++/-        Changes field of view for perspective
+x          Toggle axes
 arrows     Change view angle
+[  ]       Zoom in and out: decrease/increase dim
 0          Reset view angle
 ESC        Exit
 
-Time it took to complete assignment: 5 hours
+Time it took to complete assignment: 8 hours
