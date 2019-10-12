@@ -4,7 +4,7 @@
  *  Create a scene to be viewed in both orthogonal and perspective projections from multiple eye positions directed by user input.
  * 
  *  Key bindings:
- *  a/d      Look left/right/up in the scene
+ *  a/d/e      Look left/right/forward again in the scene
  *  w/s        Move forwards/backward into/from the scene
  *  m          Toggle between view modes: perspective, orthogonal, and first person perspective
  *  +/-        Changes field of view for perspective
@@ -487,16 +487,22 @@ void key(unsigned char ch,int x,int y)
 		EX -= MX * .1;
       EZ -= MZ * .1;
    }
-   // Look right
+   // Look at the x axis
    else if (ch == 'd' || ch == 'D') {
 		th = -90;
       ph = 0;
    }
-   // Look left
+   // Look at the y axis
    else if (ch == 'a' || ch == 'A') {
 		th = 90;
       ph = 0;
    }
+   // Look forward again
+   else if (ch == 'e' || ch == 'E') {
+		th = 0;
+      ph = 0;
+   }
+
 
    //  Reproject
    Project();
